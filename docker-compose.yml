@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=mongodb://mongodb:27017/product-management?replicaSet=rs0&directConnection=true
+      - DOCKER_DATABASE_URL=mongodb://mongodb:27017/product-management?replicaSet=rs0&directConnection=true
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - prisma-engines:/app/node_modules/.prisma
+    networks:
+      - app-network
+
+  mongodb:
+    image: mongo:latest
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./scripts:/docker-entrypoint-initdb.d
+    environment:
+      - MONGO_INITDB_DATABASE=product-management
+    networks:
+      - app-network
+    healthcheck:
+      test: "mongosh --eval 'try { rs.status().ok } catch { 0 }'"
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+volumes:
+  mongodb_data:
+  prisma-engines:
+
+networks:
+  app-network:
+    driver: bridge
