@@ -214,7 +214,3 @@ docker-compose down -v
    docker-compose down -v
    docker-compose up --build -d
    ```
-
-## 📝 Licença
-
-Este projeto está licenciado sob a Licença MIT - veja o arquivo LICENSE para detalhes.
